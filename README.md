@@ -10,3 +10,7 @@ Please check makefile for more details.
 
 In order to play you need to have Love2D installed on your computer.
 Please visit [Love2D](https://love2d.org/ "Love2D") site for installation instructions.
+
+### Screenshot
+
+![Screenshot](screenshot.png "Screenshot")
