@@ -9,7 +9,7 @@ function Player.new()
   privates[self] = {
     posX = love.graphics.getWidth()/2,
     posY = love.graphics.getHeight()/2,
-    image = require("sprites").player,
+    image = require("../sprites").player,
     speed = 180,
   }
 

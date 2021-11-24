@@ -1,12 +1,14 @@
 function love.load()
   math.randomseed(os.time())
 
- distance_between = require("utility").distance_between
- require("player")
- require("zombie")
- require("bullet")
+ distance_between = require("modules.utility").distance_between
+ require("modules.collection")
+ sprites = require("sprites")
+ require("modules.player")
+ require("modules.zombie")
+ require("modules.bullet")
 
-  zombies = {}
+  zombies = Collection.new()
   bullets = {}
   player = Player.new()
   maxTime = 2
@@ -49,7 +51,7 @@ function love.update(dt)
     state.timer = state.timer - dt
 
     if state.timer <= 0 then
-      table.insert(zombies, Zombie.new())
+      zombies:add(Zombie.new())
       state.maxTime = 0.95 * state.maxTime
       state.timer = state.maxTime
     end
@@ -57,7 +59,7 @@ function love.update(dt)
 end
 
 function love.draw()
-  love.graphics.draw(require("sprites").background, 0, 0)
+  love.graphics.draw(sprites.background, 0, 0)
 
   if state.game == 1 then
     love.graphics.setFont(love.graphics.newFont(30))
@@ -68,9 +70,9 @@ function love.draw()
 
   player:draw()
 
-  for _, z in ipairs(zombies) do
+  zombies:each(function(_, z)
     z:draw(player)
-  end
+  end)
 
   for _, b in ipairs(bullets) do
     b:draw()
@@ -96,7 +98,7 @@ function love.mousepressed(_, _, button)
 end
 
 function updateScoreAndKillZombieOnHit()
-  for _, z in ipairs(zombies) do
+  zombies:each(function(_, z)
     for _,b in ipairs(bullets) do
       if distance_between(z:getX(), z:getY(), b:getX(), b:getY()) < 20 then
         z:setDead(true)
@@ -104,25 +106,22 @@ function updateScoreAndKillZombieOnHit()
         state.score = state.score + 1
       end
     end
-  end
+  end)
 end
 
 function removeZombieOnHit()
-  for i=#zombies, 1, -1 do
-    local z = zombies[i]
-    if z:isDead() then
-      table.remove(zombies, i)
-    end
-  end
+  zombies:remove(function(z)
+    return z:isDead()
+  end)
 end
 
 function moveZombiesInPlayerDirection(player, dt)
-  for _, z in ipairs(zombies) do
+  zombies:each(function(_, z)
     z:setToPlayerDirection(player, dt)
     if distance_between(z:getX(), z:getY(), player:getX(), player:getY()) < 30 then
-      zombies = {}
+      zombies:destroy()
       state.game = 1
       player:setToCenterOfView()
     end
-  end
+  end)
 end
