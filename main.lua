@@ -2,14 +2,14 @@ function love.load()
   math.randomseed(os.time())
 
  distance_between = require("modules.utility").distance_between
- require("modules.collection")
  sprites = require("sprites")
+ require("modules.collection")
  require("modules.player")
  require("modules.zombie")
  require("modules.bullet")
 
   zombies = Collection.new()
-  bullets = {}
+  bullets = Collection.new()
   player = Player.new()
   maxTime = 2
   state = {
@@ -29,23 +29,17 @@ function love.update(dt)
   updateScoreAndKillZombieOnHit()
   removeZombieOnHit()
 
-  for _, b in ipairs(bullets) do
+  bullets:each(function(_, b)
     b:move(dt)
-  end
+  end)
 
-  for i=#bullets, 1, -1 do
-    local b = bullets[i]
-    if b:getX() < 0 or b:getY() < 0 or b:getX() > love.graphics.getWidth() or b:getY() > love.graphics.getHeight() then
-      table.remove(bullets, i)
-    end
-  end
+  bullets:remove(function(b)
+    return b:getX() < 0 or b:getY() < 0 or b:getX() > love.graphics.getWidth() or b:getY() > love.graphics.getHeight()
+  end)
 
-  for i=#bullets, 1, -1 do
-    local b = bullets[i]
-    if b:isDead() then
-      table.remove(bullets, i)
-    end
-  end
+  bullets:remove(function(b)
+    return b:isDead()
+  end)
 
   if state.game == 2 then
     state.timer = state.timer - dt
@@ -74,9 +68,9 @@ function love.draw()
     z:draw(player)
   end)
 
-  for _, b in ipairs(bullets) do
+  bullets:each(function(_, b)
     b:draw()
-  end
+  end)
 end
 
 function love.keypressed(key)
@@ -89,23 +83,25 @@ function love.keypressed(key)
 end
 function love.mousepressed(_, _, button)
   if button == 1 and state.game == 2 then
-    table.insert(bullets, Bullet.new({
-      x = player:getX(),
-      y = player:getY(),
-      angle = player:getMouseAngle(),
-    }))
+    bullets:add(
+      Bullet.new({
+        x = player:getX(),
+        y = player:getY(),
+        angle = player:getMouseAngle(),
+      })
+    )
   end
 end
 
 function updateScoreAndKillZombieOnHit()
   zombies:each(function(_, z)
-    for _,b in ipairs(bullets) do
+    bullets:each(function(_, b)
       if distance_between(z:getX(), z:getY(), b:getX(), b:getY()) < 20 then
         z:setDead(true)
         b:setDead(true)
         state.score = state.score + 1
       end
-    end
+    end)
   end)
 end
 
