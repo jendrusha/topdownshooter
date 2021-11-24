@@ -34,11 +34,13 @@ function love.update(dt)
   end)
 
   bullets:remove(function(b)
-    return b:getX() < 0 or b:getY() < 0 or b:getX() > love.graphics.getWidth() or b:getY() > love.graphics.getHeight()
-  end)
-
-  bullets:remove(function(b)
-    return b:isDead()
+    return (
+        b:getX() < 0 or
+        b:getY() < 0 or
+        b:getX() > love.graphics.getWidth() or
+        b:getY() > love.graphics.getHeight()
+      ) or
+      b:isDead()
   end)
 
   if state.game == 2 then
